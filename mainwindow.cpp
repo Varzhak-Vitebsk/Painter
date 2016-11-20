@@ -5,6 +5,7 @@ MainWindow::MainWindow()
     tuneWindow();
     createActions();
     setCurrentFile(QString());
+    penButtonClicked();
 }
 
 void MainWindow::loadFile(const QString &file_name)
@@ -66,6 +67,32 @@ void MainWindow::changeMousePos(const QPoint &mouse_pos)
     mouse_pos_y_num->setText(QString().setNum(mouse_pos.y()));
 }
 
+void MainWindow::penButtonClicked()
+{
+    current_style_button->setDown(false);
+    current_draw_form_button->setDown(false);
+    pen_button->setDown(true);
+    current_style_button = pen_button;
+    canvas->setPenStyle(RenderArea::PenStyle::SIMPLE);
+    canvas->setDrawForm(RenderArea::DrawForm::DOT);
+}
+
+void MainWindow::drawLineButtonClicked()
+{
+    current_draw_form_button->setDown(false);
+    draw_line_button->setDown(true);
+    current_style_button = draw_line_button;
+    canvas->setDrawForm(RenderArea::DrawForm::LINE);
+}
+
+void MainWindow::drawRectButtonClicked()
+{
+    current_draw_form_button->setDown(false);
+    draw_rect_button->setDown(true);
+    current_style_button = draw_rect_button;
+    canvas->setDrawForm(RenderArea::DrawForm::RECT);
+}
+
 void MainWindow::createActions()
 {
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
@@ -93,13 +120,16 @@ void MainWindow::tuneWindow()
 {
     QFrame *frame = new QFrame;
     QVBoxLayout *frameLayout = new QVBoxLayout(frame);
+
     //----frame layout objects
     QHBoxLayout *centralLayout = new QHBoxLayout();
     QHBoxLayout *bottomLayout = new QHBoxLayout();
+
     //----central layout objects
     QVBoxLayout *instrumentLayout = new QVBoxLayout();
     QScrollArea *canvas_area = new QScrollArea();
     canvas = new RenderArea();
+
     //----bottom layout objects
     QLabel *mouse_pos_x_str = new QLabel("X:");
     mouse_pos_x_str->setFixedSize(20, 20);
@@ -110,13 +140,22 @@ void MainWindow::tuneWindow()
     mouse_pos_y_num = new QLabel();
     mouse_pos_y_num->setFixedHeight(20);
     connect(canvas, SIGNAL(getMousePos(QPoint)), this, SLOT(changeMousePos(QPoint)));
+
     //----instrument layout objects
-    QSize instrument_buttons_size(50 ,50);
-    QPushButton *draw_line_button = new QPushButton("Line");
+    QSize instrument_buttons_size(50, 50);
+    pen_button = new QPushButton("Pen");
+    pen_button->setFixedSize(instrument_buttons_size);
+    current_style_button = pen_button;
+    current_draw_form_button = pen_button;
+    connect(pen_button, SIGNAL(clicked(bool)), this, SLOT(penButtonClicked()));
+    draw_line_button = new QPushButton("Line");
     draw_line_button->setFixedSize(instrument_buttons_size);
-    QPushButton *draw_rect_button = new QPushButton("Rect");
+    connect(draw_line_button, SIGNAL(clicked(bool)), this, SLOT(drawLineButtonClicked()));
+    draw_rect_button = new QPushButton("Rect");
     draw_rect_button->setFixedSize(instrument_buttons_size);
-    //----placing layots
+    connect(draw_rect_button, SIGNAL(clicked(bool)), this, SLOT(drawRectButtonClicked()));
+
+    //----placing and setting layots
     frameLayout->addLayout(centralLayout);
     frameLayout->addLayout(bottomLayout);
     centralLayout->addLayout(instrumentLayout);
@@ -131,9 +170,11 @@ void MainWindow::tuneWindow()
     canvas_area->setWidget(canvas);
     instrumentLayout->setAlignment(Qt::AlignLeft | Qt::AlignTop);
     instrumentLayout->setSizeConstraint(QLayout::SetNoConstraint);
+    instrumentLayout->addWidget(pen_button);
     instrumentLayout->addWidget(draw_line_button);
     instrumentLayout->addWidget(draw_rect_button);
 
+    //----main window settings
     setCentralWidget(frame);
     setMinimumSize(400, 500);
 }

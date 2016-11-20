@@ -19,6 +19,9 @@ public:
       bool save();
       bool saveAs();
       void changeMousePos(const QPoint &mouse_pos);
+      void penButtonClicked();
+      void drawLineButtonClicked();
+      void drawRectButtonClicked();
 
   private:
       void createActions();
@@ -31,6 +34,11 @@ public:
       RenderArea *canvas;
       QLabel *mouse_pos_x_num;
       QLabel *mouse_pos_y_num;
+      QPushButton *pen_button;
+      QPushButton *draw_line_button;
+      QPushButton *draw_rect_button;
+      QPushButton *current_style_button;
+      QPushButton *current_draw_form_button;
 };
 
 #endif // MAINWINDOW_H

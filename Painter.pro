@@ -14,7 +14,7 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    renderarea.cpp
+    graphicsview.cpp
 
 HEADERS  += mainwindow.h \
-    renderarea.h
+    graphicsview.h

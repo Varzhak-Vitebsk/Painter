@@ -4,8 +4,7 @@ MainWindow::MainWindow()
 {
     tuneWindow();
     createActions();
-    setCurrentFile(QString());
-    penButtonClicked();
+    setCurrentFile(QString());    
 }
 
 void MainWindow::loadFile(const QString &file_name)
@@ -61,36 +60,10 @@ bool MainWindow::saveAs()
     return saveFile(dialog.selectedFiles().first());
 }
 
-void MainWindow::changeMousePos(const QPoint &mouse_pos)
+void MainWindow::changeMousePos(const QPoint &point)
 {
-    mouse_pos_x_num->setText(QString().setNum(mouse_pos.x()));
-    mouse_pos_y_num->setText(QString().setNum(mouse_pos.y()));
-}
-
-void MainWindow::penButtonClicked()
-{
-    current_style_button->setDown(false);
-    current_draw_form_button->setDown(false);
-    pen_button->setDown(true);
-    current_style_button = pen_button;
-    canvas->setPenStyle(RenderArea::PenStyle::SIMPLE);
-    canvas->setDrawForm(RenderArea::DrawForm::DOT);
-}
-
-void MainWindow::drawLineButtonClicked()
-{
-    current_draw_form_button->setDown(false);
-    draw_line_button->setDown(true);
-    current_style_button = draw_line_button;
-    canvas->setDrawForm(RenderArea::DrawForm::LINE);
-}
-
-void MainWindow::drawRectButtonClicked()
-{
-    current_draw_form_button->setDown(false);
-    draw_rect_button->setDown(true);
-    current_style_button = draw_rect_button;
-    canvas->setDrawForm(RenderArea::DrawForm::RECT);
+    mouse_pos->setText("X: " + QString().setNum(point.x())
+                             + " Y: " +  QString().setNum(point.y()));
 }
 
 void MainWindow::createActions()
@@ -117,66 +90,23 @@ void MainWindow::createActions()
 }
 
 void MainWindow::tuneWindow()
-{
+{    
+    setMinimumSize(700, 600);
+
     QFrame *frame = new QFrame;
-    QVBoxLayout *frameLayout = new QVBoxLayout(frame);
+    scene = new QGraphicsScene();
+    scene->setSceneRect(0, 0, 640, 480);
+    view = new GraphicsView(scene, frame);
+    view->setMouseTracking(true);
 
-    //----frame layout objects
-    QHBoxLayout *centralLayout = new QHBoxLayout();
-    QHBoxLayout *bottomLayout = new QHBoxLayout();
-
-    //----central layout objects
-    QVBoxLayout *instrumentLayout = new QVBoxLayout();
-    QScrollArea *canvas_area = new QScrollArea();
-    canvas = new RenderArea();
-
-    //----bottom layout objects
-    QLabel *mouse_pos_x_str = new QLabel("X:");
-    mouse_pos_x_str->setFixedSize(20, 20);
-    mouse_pos_x_num = new QLabel();
-    mouse_pos_x_num->setFixedHeight(20);
-    QLabel *mouse_pos_y_str = new QLabel("Y:");
-    mouse_pos_y_str->setFixedSize(20, 20);
-    mouse_pos_y_num = new QLabel();
-    mouse_pos_y_num->setFixedHeight(20);
-    connect(canvas, SIGNAL(getMousePos(QPoint)), this, SLOT(changeMousePos(QPoint)));
-
-    //----instrument layout objects
-    QSize instrument_buttons_size(50, 50);
-    pen_button = new QPushButton("Pen");
-    pen_button->setFixedSize(instrument_buttons_size);
-    current_style_button = pen_button;
-    current_draw_form_button = pen_button;
-    connect(pen_button, SIGNAL(clicked(bool)), this, SLOT(penButtonClicked()));
-    draw_line_button = new QPushButton("Line");
-    draw_line_button->setFixedSize(instrument_buttons_size);
-    connect(draw_line_button, SIGNAL(clicked(bool)), this, SLOT(drawLineButtonClicked()));
-    draw_rect_button = new QPushButton("Rect");
-    draw_rect_button->setFixedSize(instrument_buttons_size);
-    connect(draw_rect_button, SIGNAL(clicked(bool)), this, SLOT(drawRectButtonClicked()));
-
-    //----placing and setting layots
-    frameLayout->addLayout(centralLayout);
-    frameLayout->addLayout(bottomLayout);
-    centralLayout->addLayout(instrumentLayout);
-    centralLayout->addWidget(canvas_area);
-    centralLayout->setAlignment(Qt::AlignLeft | Qt::AlignTop);
-    centralLayout->setSizeConstraint(QLayout::SetMinimumSize);
-    bottomLayout->addWidget(mouse_pos_x_str);
-    bottomLayout->addWidget(mouse_pos_x_num);
-    bottomLayout->addWidget(mouse_pos_y_str);
-    bottomLayout->addWidget(mouse_pos_y_num);
-    bottomLayout->setAlignment(Qt::AlignLeft);
-    canvas_area->setWidget(canvas);
-    instrumentLayout->setAlignment(Qt::AlignLeft | Qt::AlignTop);
-    instrumentLayout->setSizeConstraint(QLayout::SetNoConstraint);
-    instrumentLayout->addWidget(pen_button);
-    instrumentLayout->addWidget(draw_line_button);
-    instrumentLayout->addWidget(draw_rect_button);
+    mouse_pos = new QLabel();
+    statusBar()->addPermanentWidget(mouse_pos);
+    statusBar()->setLayoutDirection(Qt::RightToLeft);
+    view->show();
 
     //----main window settings
     setCentralWidget(frame);
-    setMinimumSize(400, 500);
+    connect(view, SIGNAL(getMousePos(QPoint)), this, SLOT(changeMousePos(QPoint)));
 }
 
 bool MainWindow::changesSaved()

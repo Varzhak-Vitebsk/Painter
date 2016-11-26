@@ -1,5 +1,11 @@
 #include "graphicsview.h"
 
+GraphicsView::GraphicsView(QWidget *parent):
+    QGraphicsView(parent), latest_mouse_pos(QPointF(-1, -1))
+{
+
+}
+
 GraphicsView::GraphicsView(QGraphicsScene *scene, QWidget *parent):
     QGraphicsView(scene, parent), latest_mouse_pos(QPointF(-1, -1))
 {

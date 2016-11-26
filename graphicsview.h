@@ -8,7 +8,8 @@ class GraphicsView : public QGraphicsView
 {
     Q_OBJECT
 
-public:    
+public:
+    explicit GraphicsView(QWidget *parent = Q_NULLPTR);
     explicit GraphicsView(QGraphicsScene *scene, QWidget *parent = Q_NULLPTR);
 
 signals:

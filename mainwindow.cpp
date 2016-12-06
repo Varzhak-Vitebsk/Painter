@@ -1,9 +1,11 @@
 #include "mainwindow.h"
 
-MainWindow::MainWindow()
+MainWindow::MainWindow():
+    panel_button_size(QSize(50, 50))
 {    
     tuneWindow();
     createActions();
+    createInstrumentWidgets();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -127,10 +129,45 @@ void MainWindow::sceneChanged()
     setWindowModified(true);
 }
 
+void MainWindow::instrumentPanelDockWidgetAction()
+{
+    if(!instrument_dock_widget->isVisible()) show_instrument_panel->setChecked(false);
+}
+
+void MainWindow::penButtonClicked()
+{
+    view->setDrawForm(DrawForm::DOT);
+}
+
+void MainWindow::lineButtonClicked()
+{
+    view->setDrawForm(DrawForm::LINE);
+}
+
+void MainWindow::rectButtonClicked()
+{
+    view->setDrawForm(DrawForm::RECT);
+}
+
+/*void MainWindow::instrumentPanelDockWidgetAreaChanged(Qt::DockWidgetArea area)
+{
+    if((area & Qt::LeftDockWidgetArea) || (area & Qt::RightDockWidgetArea))
+        qDebug() << qobject_cast< QWidget* >(instrument_dock_widget->children().first());
+        //qobject_cast< QBoxLayout* >(instrument_dock_widget->layout())->setDirection(QBoxLayout::TopToBottom);
+    if((area & Qt::TopDockWidgetArea) || (area & Qt::BottomDockWidgetArea))
+        qDebug() << instrument_dock_widget->layout();
+        //qobject_cast< QBoxLayout* >(instrument_dock_widget->layout())->setDirection(QBoxLayout::LeftToRight);
+}*/
+
+void MainWindow::instrumentPanelMenuAction()
+{
+    show_instrument_panel->isChecked() ? instrument_dock_widget->show() : instrument_dock_widget->hide();
+}
+
 void MainWindow::createActions()
 {
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
-
+    // File menu actions
     QAction *newAct = new QAction(tr("&New"), this);
     newAct->setShortcuts(QKeySequence::New);
     newAct->setStatusTip(tr("Create a new file"));
@@ -160,10 +197,57 @@ void MainWindow::createActions()
     exitAct->setStatusTip(tr("Exit"));
     connect(exitAct, SIGNAL(triggered(bool)), qApp, SLOT(closeAllWindows()));
     fileMenu->addAction(exitAct);
+
+    QMenu *panelsMenu = menuBar()->addMenu(tr("&Panels"));
+    //Panels menu actions
+    show_instrument_panel = new QAction(tr("&Instrumet panel"), this);
+    show_instrument_panel->setCheckable(true);
+    show_instrument_panel->setChecked(true);
+    show_instrument_panel->setStatusTip(tr("Ahow instrument panel"));
+    connect(show_instrument_panel, &QAction::changed, this, &MainWindow::instrumentPanelMenuAction);
+    panelsMenu->addAction(show_instrument_panel);
+}
+
+void MainWindow::createInstrumentWidgets()
+{
+    instrument_dock_widget = new QDockWidget("Instruments");
+    connect(instrument_dock_widget, SIGNAL(visibilityChanged(bool)),
+            this, SLOT(instrumentPanelDockWidgetAction()));
+    //connect(instrument_dock_widget, SIGNAL(dockLocationChanged(Qt::DockWidgetArea)),
+    //        this, SLOT(instrumentPanelDockWidgetAreaChanged(Qt::DockWidgetArea)));
+    QWidget *instrument_panel = new QWidget();
+
+    QBoxLayout *layout1 = new QBoxLayout(QBoxLayout::TopToBottom, instrument_panel);
+    //layout1->setDirection(QBoxLayout::TopToBottom);
+    layout1->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+    instrument_panel->setLayout(layout1);
+
+    QPushButton *pen_button = new QPushButton("Pen");
+    pen_button->setMinimumSize(panel_button_size);
+    pen_button->setMaximumSize(panel_button_size);
+    connect(pen_button, SIGNAL(clicked(bool)), this, SLOT(penButtonClicked()));
+    layout1->addWidget(pen_button);
+
+    QPushButton *line_button = new QPushButton("Line");
+    line_button->setMinimumSize(panel_button_size);
+    line_button->setMaximumSize(panel_button_size);
+    connect(line_button, SIGNAL(clicked(bool)), this, SLOT(lineButtonClicked()));
+    layout1->addWidget(line_button);
+
+    QPushButton *rect_button = new QPushButton("Rect");
+    rect_button->setMinimumSize(panel_button_size);
+    rect_button->setMaximumSize(panel_button_size);
+    connect(rect_button, SIGNAL(clicked(bool)), this, SLOT(rectButtonClicked()));
+    layout1->addWidget(rect_button);
+
+    instrument_dock_widget->setWidget(instrument_panel);
+    addDockWidget(Qt::LeftDockWidgetArea, instrument_dock_widget);
 }
 
 void MainWindow::tuneWindow()
 {    
+    qApp->setStyle("Windows");
+    //qDebug() << QStyleFactory::keys();
     setMinimumSize(700, 600);
 
     QFrame *frame = new QFrame;
@@ -225,7 +309,6 @@ bool MainWindow::saveFile(const QString &file_name)
     view->render(&painter);
     if(tmp_image.save(file_name, "PNG", 100))
     {
-
         setWindowModified(false);
     }
     painter.end();

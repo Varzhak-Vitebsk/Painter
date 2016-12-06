@@ -4,13 +4,16 @@
 #include <QObject>
 #include <QtWidgets>
 
+enum class DrawForm { DOT, LINE, RECT };
+
 class GraphicsView : public QGraphicsView
 {
     Q_OBJECT
 
 public:
     explicit GraphicsView(QWidget *parent = Q_NULLPTR);
-    explicit GraphicsView(QGraphicsScene *scene, QWidget *parent = Q_NULLPTR);
+    //explicit GraphicsView(QGraphicsScene *scene, QWidget *parent = Q_NULLPTR);
+    void setDrawForm(DrawForm draw_form);
 
 signals:
     void getMousePos(const QPoint&);
@@ -23,7 +26,9 @@ protected:
     void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
 
 private:
-    QPointF latest_mouse_pos;
+    QPointF latest_mouse_pos, initial_mouse_pos;
+    DrawForm current_draw_form;
+    QGraphicsItem * current_item;
 
 };
 

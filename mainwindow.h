@@ -25,7 +25,7 @@ private slots:
     void penButtonClicked();
     void lineButtonClicked();
     void rectButtonClicked();
-    //void instrumentPanelDockWidgetAreaChanged(Qt::DockWidgetArea area);
+    void instrumentPanelDockWidgetAreaChanged(Qt::DockWidgetArea area);
 
 private:
     void createActions();
@@ -44,7 +44,6 @@ private:
     GraphicsView *view;
     QDockWidget *instrument_dock_widget;
     QAction *show_instrument_panel;
-
 };
 
 #endif // MAINWINDOW_H

@@ -131,7 +131,7 @@ void MainWindow::sceneChanged()
 
 void MainWindow::instrumentPanelDockWidgetAction()
 {
-    if(!instrument_dock_widget->isVisible()) show_instrument_panel->setChecked(false);
+    instrument_dock_widget->isVisible() ? show_instrument_panel->setChecked(true) : show_instrument_panel->setChecked(false);
 }
 
 void MainWindow::penButtonClicked()
@@ -149,15 +149,23 @@ void MainWindow::rectButtonClicked()
     view->setDrawForm(DrawForm::RECT);
 }
 
-/*void MainWindow::instrumentPanelDockWidgetAreaChanged(Qt::DockWidgetArea area)
+void MainWindow::instrumentPanelDockWidgetAreaChanged(Qt::DockWidgetArea area)
 {
-    if((area & Qt::LeftDockWidgetArea) || (area & Qt::RightDockWidgetArea))
-        qDebug() << qobject_cast< QWidget* >(instrument_dock_widget->children().first());
-        //qobject_cast< QBoxLayout* >(instrument_dock_widget->layout())->setDirection(QBoxLayout::TopToBottom);
-    if((area & Qt::TopDockWidgetArea) || (area & Qt::BottomDockWidgetArea))
-        qDebug() << instrument_dock_widget->layout();
-        //qobject_cast< QBoxLayout* >(instrument_dock_widget->layout())->setDirection(QBoxLayout::LeftToRight);
-}*/
+    QBoxLayout *layout = instrument_dock_widget->findChild < QBoxLayout* >();
+    if(layout)
+    {
+        if((area & Qt::LeftDockWidgetArea) || (area & Qt::RightDockWidgetArea))
+        {
+            layout->setDirection(QBoxLayout::TopToBottom);
+            layout->setAlignment(Qt::AlignCenter | Qt::AlignTop);
+        }
+        if((area & Qt::TopDockWidgetArea) || (area & Qt::BottomDockWidgetArea))
+        {
+            layout->setDirection(QBoxLayout::LeftToRight);
+            layout->setAlignment(Qt::AlignCenter | Qt::AlignLeft);
+        }
+    }
+}
 
 void MainWindow::instrumentPanelMenuAction()
 {
@@ -199,7 +207,7 @@ void MainWindow::createActions()
     fileMenu->addAction(exitAct);
 
     QMenu *panelsMenu = menuBar()->addMenu(tr("&Panels"));
-    //Panels menu actions
+    // Instrument menu actions
     show_instrument_panel = new QAction(tr("&Instrumet panel"), this);
     show_instrument_panel->setCheckable(true);
     show_instrument_panel->setChecked(true);
@@ -210,35 +218,44 @@ void MainWindow::createActions()
 
 void MainWindow::createInstrumentWidgets()
 {
-    instrument_dock_widget = new QDockWidget("Instruments");
+    // DockWidget with instrument buttons
+    instrument_dock_widget = new QDockWidget("Instruments");    
     connect(instrument_dock_widget, SIGNAL(visibilityChanged(bool)),
             this, SLOT(instrumentPanelDockWidgetAction()));
-    //connect(instrument_dock_widget, SIGNAL(dockLocationChanged(Qt::DockWidgetArea)),
-    //        this, SLOT(instrumentPanelDockWidgetAreaChanged(Qt::DockWidgetArea)));
+    connect(instrument_dock_widget, SIGNAL(dockLocationChanged(Qt::DockWidgetArea)),
+            this, SLOT(instrumentPanelDockWidgetAreaChanged(Qt::DockWidgetArea)));
     QWidget *instrument_panel = new QWidget();
+    instrument_panel->setMinimumWidth(150);
+    QButtonGroup *instrument_buttons_group = new QButtonGroup(this);
 
-    QBoxLayout *layout1 = new QBoxLayout(QBoxLayout::TopToBottom, instrument_panel);
-    //layout1->setDirection(QBoxLayout::TopToBottom);
-    layout1->setAlignment(Qt::AlignLeft | Qt::AlignTop);
-    instrument_panel->setLayout(layout1);
+    QBoxLayout *instrument_widget_layout = new QBoxLayout(QBoxLayout::TopToBottom, instrument_panel);
+    instrument_widget_layout->setAlignment(Qt::AlignCenter | Qt::AlignTop);
+    instrument_panel->setLayout(instrument_widget_layout);
 
     QPushButton *pen_button = new QPushButton("Pen");
     pen_button->setMinimumSize(panel_button_size);
     pen_button->setMaximumSize(panel_button_size);
     connect(pen_button, SIGNAL(clicked(bool)), this, SLOT(penButtonClicked()));
-    layout1->addWidget(pen_button);
+    instrument_widget_layout->addWidget(pen_button);
+    pen_button->setCheckable(true);
+    pen_button->setChecked(true);
+    instrument_buttons_group->addButton(pen_button);
 
     QPushButton *line_button = new QPushButton("Line");
     line_button->setMinimumSize(panel_button_size);
     line_button->setMaximumSize(panel_button_size);
     connect(line_button, SIGNAL(clicked(bool)), this, SLOT(lineButtonClicked()));
-    layout1->addWidget(line_button);
+    instrument_widget_layout->addWidget(line_button);
+    line_button->setCheckable(true);
+    instrument_buttons_group->addButton(line_button);
 
     QPushButton *rect_button = new QPushButton("Rect");
     rect_button->setMinimumSize(panel_button_size);
     rect_button->setMaximumSize(panel_button_size);
     connect(rect_button, SIGNAL(clicked(bool)), this, SLOT(rectButtonClicked()));
-    layout1->addWidget(rect_button);
+    instrument_widget_layout->addWidget(rect_button);
+    rect_button->setCheckable(true);
+    instrument_buttons_group->addButton(rect_button);
 
     instrument_dock_widget->setWidget(instrument_panel);
     addDockWidget(Qt::LeftDockWidgetArea, instrument_dock_widget);
@@ -246,13 +263,13 @@ void MainWindow::createInstrumentWidgets()
 
 void MainWindow::tuneWindow()
 {    
-    qApp->setStyle("Windows");
-    //qDebug() << QStyleFactory::keys();
-    setMinimumSize(700, 600);
+    qApp->setStyle("Windows");    
+    setMinimumSize(800, 600);
 
     QFrame *frame = new QFrame;
     view = new GraphicsView(frame);
-    view->setMouseTracking(true);
+    view->setMouseTracking(true);    
+
     newFile();
 
     mouse_pos = new QLabel();
@@ -260,7 +277,6 @@ void MainWindow::tuneWindow()
     statusBar()->setLayoutDirection(Qt::RightToLeft);
     view->show();
 
-    //----main window settings
     setCentralWidget(frame);
     connect(view, SIGNAL(getMousePos(QPoint)), this, SLOT(changeMousePos(QPoint)));    
 }

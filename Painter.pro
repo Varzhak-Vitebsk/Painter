@@ -18,3 +18,6 @@ SOURCES += main.cpp\
 
 HEADERS  += mainwindow.h \
     graphicsview.h
+
+RESOURCES += \
+    resourses.qrc

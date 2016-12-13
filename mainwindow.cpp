@@ -1,11 +1,12 @@
 #include "mainwindow.h"
 
 MainWindow::MainWindow():
-    panel_button_size(QSize(50, 50))
+    panel_button_size(QSize(100, 50))
 {    
     tuneWindow();
     createActions();
     createInstrumentWidgets();
+    drawRubberCursor(1);
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -131,22 +132,9 @@ void MainWindow::sceneChanged()
 
 void MainWindow::instrumentPanelDockWidgetAction()
 {
-    instrument_dock_widget->isVisible() ? show_instrument_panel->setChecked(true) : show_instrument_panel->setChecked(false);
-}
-
-void MainWindow::penButtonClicked()
-{
-    view->setDrawForm(DrawForm::DOT);
-}
-
-void MainWindow::lineButtonClicked()
-{
-    view->setDrawForm(DrawForm::LINE);
-}
-
-void MainWindow::rectButtonClicked()
-{
-    view->setDrawForm(DrawForm::RECT);
+    instrument_dock_widget->isVisible()
+            ? show_instrument_panel->setChecked(true)
+            : show_instrument_panel->setChecked(false);
 }
 
 void MainWindow::instrumentPanelDockWidgetAreaChanged(Qt::DockWidgetArea area)
@@ -167,9 +155,51 @@ void MainWindow::instrumentPanelDockWidgetAreaChanged(Qt::DockWidgetArea area)
     }
 }
 
+void MainWindow::penButtonClicked()
+{
+    view->setDrawForm(DrawForm::DOT);
+    view->setCursor(Qt::ArrowCursor);
+}
+
+void MainWindow::lineButtonClicked()
+{
+    view->setDrawForm(DrawForm::LINE);
+    view->setCursor(Qt::ArrowCursor);
+}
+
+void MainWindow::rectButtonClicked()
+{
+    view->setDrawForm(DrawForm::RECT);
+    view->setCursor(Qt::ArrowCursor);
+}
+
+void MainWindow::rubberButtonClicked()
+{
+    view->setDrawForm(DrawForm::RUBBER);
+    view->setCursor(rubber_cursor);
+}
+
+void MainWindow::penSpinBoxChanged(int value)
+{
+    view->setPenSize(value);
+    drawRubberCursor(value);
+    if(view->cursor().shape() != Qt::ArrowCursor) view->setCursor(rubber_cursor);
+}
+
+void MainWindow::colorButtonClicked()
+{
+    QPixmap pixmap(panel_button_size);
+    QColor color = QColorDialog::getColor();
+    pixmap.fill(color);
+    color_button->setIcon(QIcon(pixmap));
+    view->setPenColor(color);
+}
+
 void MainWindow::instrumentPanelMenuAction()
 {
-    show_instrument_panel->isChecked() ? instrument_dock_widget->show() : instrument_dock_widget->hide();
+    show_instrument_panel->isChecked()
+            ? instrument_dock_widget->show()
+            : instrument_dock_widget->hide();
 }
 
 void MainWindow::createActions()
@@ -232,30 +262,62 @@ void MainWindow::createInstrumentWidgets()
     instrument_widget_layout->setAlignment(Qt::AlignCenter | Qt::AlignTop);
     instrument_panel->setLayout(instrument_widget_layout);
 
-    QPushButton *pen_button = new QPushButton("Pen");
+    QSpinBox *pen_size = new QSpinBox();
+    pen_size->setMinimumSize(panel_button_size);
+    pen_size->setMaximumSize(panel_button_size);
+    connect(pen_size, SIGNAL(valueChanged(int)), this, SLOT(penSpinBoxChanged(int)));
+    pen_size->setMinimum(1);
+    pen_size->setMaximum(100);
+    pen_size->setToolTip("Pen size");
+    instrument_widget_layout->addWidget(pen_size);
+
+    QPushButton *pen_button = new QPushButton(QIcon(":/Pictures/PenButtonPic"), QString());
     pen_button->setMinimumSize(panel_button_size);
     pen_button->setMaximumSize(panel_button_size);
-    connect(pen_button, SIGNAL(clicked(bool)), this, SLOT(penButtonClicked()));
-    instrument_widget_layout->addWidget(pen_button);
+    connect(pen_button, SIGNAL(clicked(bool)), this, SLOT(penButtonClicked()));    
     pen_button->setCheckable(true);
     pen_button->setChecked(true);
+    pen_button->setToolTip("Pen");
+    instrument_widget_layout->addWidget(pen_button);
     instrument_buttons_group->addButton(pen_button);
 
-    QPushButton *line_button = new QPushButton("Line");
+    QPushButton *line_button = new QPushButton(QIcon(":/Pictures/LineButtonPic"), QString());
     line_button->setMinimumSize(panel_button_size);
     line_button->setMaximumSize(panel_button_size);
-    connect(line_button, SIGNAL(clicked(bool)), this, SLOT(lineButtonClicked()));
-    instrument_widget_layout->addWidget(line_button);
+    connect(line_button, SIGNAL(clicked(bool)), this, SLOT(lineButtonClicked()));    
     line_button->setCheckable(true);
+    line_button->setToolTip("Draw a line");
+    instrument_widget_layout->addWidget(line_button);
     instrument_buttons_group->addButton(line_button);
 
-    QPushButton *rect_button = new QPushButton("Rect");
+    QPushButton *rect_button = new QPushButton(QIcon(":/Pictures/RectButtonPic"), QString());
     rect_button->setMinimumSize(panel_button_size);
     rect_button->setMaximumSize(panel_button_size);
-    connect(rect_button, SIGNAL(clicked(bool)), this, SLOT(rectButtonClicked()));
-    instrument_widget_layout->addWidget(rect_button);
+    connect(rect_button, SIGNAL(clicked(bool)), this, SLOT(rectButtonClicked()));    
     rect_button->setCheckable(true);
+    rect_button->setToolTip("Draw a rectangle");
+    instrument_widget_layout->addWidget(rect_button);
     instrument_buttons_group->addButton(rect_button);
+
+    QPushButton *rubber_button = new QPushButton(QIcon(":/Pictures/RubberButtonPic"), QString());
+    rubber_button->setMinimumSize(panel_button_size);
+    rubber_button->setMaximumSize(panel_button_size);
+    connect(rubber_button, SIGNAL(clicked(bool)), this, SLOT(rubberButtonClicked()));
+    rubber_button->setCheckable(true);
+    rubber_button->setToolTip("Rubber");
+    instrument_widget_layout->addWidget(rubber_button);
+    instrument_buttons_group->addButton(rubber_button);
+
+    color_button = new QPushButton();
+    color_button->setMinimumSize(panel_button_size);
+    color_button->setMaximumSize(panel_button_size);
+    connect(color_button, SIGNAL(clicked(bool)), this, SLOT(colorButtonClicked()));
+    color_button->setFlat(true);
+    QPixmap pixmap(panel_button_size);
+    pixmap.fill(Qt::black);
+    color_button->setIcon(QIcon(pixmap));
+    color_button->setToolTip("Current color, click to change");
+    instrument_widget_layout->addWidget(color_button);
 
     instrument_dock_widget->setWidget(instrument_panel);
     addDockWidget(Qt::LeftDockWidgetArea, instrument_dock_widget);
@@ -263,22 +325,23 @@ void MainWindow::createInstrumentWidgets()
 
 void MainWindow::tuneWindow()
 {    
-    qApp->setStyle("Windows");    
+    //qApp->setStyle("Windows");
     setMinimumSize(800, 600);
 
     QFrame *frame = new QFrame;
     view = new GraphicsView(frame);
-    view->setMouseTracking(true);    
+    view->setMouseTracking(true);
 
     newFile();
 
     mouse_pos = new QLabel();
+    mouse_pos->setToolTip("Mouse coordinates on canvas");
     statusBar()->addPermanentWidget(mouse_pos);
     statusBar()->setLayoutDirection(Qt::RightToLeft);
     view->show();
 
     setCentralWidget(frame);
-    connect(view, SIGNAL(getMousePos(QPoint)), this, SLOT(changeMousePos(QPoint)));    
+    connect(view, SIGNAL(getMousePos(QPoint)), this, SLOT(changeMousePos(QPoint)));
 }
 
 bool MainWindow::changesSaved()
@@ -339,4 +402,10 @@ void MainWindow::setCurrentFile(const QString &file_name)
     if (cur_file.isEmpty()) shownName = "untitled.png";
     setWindowFilePath(shownName);
     //qDebug() << "Set cur file";
+}
+
+void MainWindow::drawRubberCursor(int width)
+{
+    QPixmap cursor = QPixmap(":/Pictures/RubberCursorPic", "png", Qt::DiffuseAlphaDither);
+    rubber_cursor = QCursor(cursor.scaled(width, width));
 }

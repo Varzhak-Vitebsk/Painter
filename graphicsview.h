@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QtWidgets>
 
-enum class DrawForm { DOT, LINE, RECT };
+enum class DrawForm { DOT, LINE, RECT, RUBBER };
 
 class GraphicsView : public QGraphicsView
 {
@@ -12,8 +12,9 @@ class GraphicsView : public QGraphicsView
 
 public:
     explicit GraphicsView(QWidget *parent = Q_NULLPTR);
-    //explicit GraphicsView(QGraphicsScene *scene, QWidget *parent = Q_NULLPTR);
     void setDrawForm(DrawForm draw_form);
+    void setPenSize(int size);
+    void setPenColor(QColor color);
 
 signals:
     void getMousePos(const QPoint&);
@@ -28,7 +29,8 @@ protected:
 private:
     QPointF latest_mouse_pos, initial_mouse_pos;
     DrawForm current_draw_form;
-    QGraphicsItem * current_item;
+    QGraphicsItem *current_item;
+    QPen *pen;
 
 };
 

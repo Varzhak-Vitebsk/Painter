@@ -22,10 +22,14 @@ private slots:
     void sceneChanged();
     void instrumentPanelMenuAction();
     void instrumentPanelDockWidgetAction();
+    void instrumentPanelDockWidgetAreaChanged(Qt::DockWidgetArea area);
     void penButtonClicked();
     void lineButtonClicked();
     void rectButtonClicked();
-    void instrumentPanelDockWidgetAreaChanged(Qt::DockWidgetArea area);
+    void rubberButtonClicked();
+    void penSpinBoxChanged(int value);
+    void colorButtonClicked();
+
 
 private:
     void createActions();
@@ -37,6 +41,7 @@ private:
     void loadFile(const QString &file_name);
     bool saveFile(const QString &file_name);
     void setCurrentFile(const QString &file_name);
+    void drawRubberCursor(int width);
 
     QString cur_file;
     const QSize panel_button_size;
@@ -44,6 +49,9 @@ private:
     GraphicsView *view;
     QDockWidget *instrument_dock_widget;
     QAction *show_instrument_panel;
+    QPushButton *color_button;
+    QCursor rubber_cursor;
+
 };
 
 #endif // MAINWINDOW_H

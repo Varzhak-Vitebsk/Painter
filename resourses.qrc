@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/Pictures">
+        <file alias="RubberCursorPic">Pics/CursorCircle.png</file>
+        <file alias="LineButtonPic">Pics/LineButtonPic.png</file>
+        <file alias="PenButtonPic">Pics/PenButtonPic.png</file>
+        <file alias="RectButtonPic">Pics/RectButtonPic.png</file>
+        <file alias="RubberButtonPic">Pics/RubberButtonPic.png</file>
+    </qresource>
+</RCC>
